@@ -6,7 +6,7 @@ part 'person_dao.g.dart';
 
 @DriftAccessor(tables: [Persons])
 class PersonDao extends DatabaseAccessor<AppDatabase> with _$PersonDaoMixin {
-  PersonDao(AppDatabase db) : super(db);
+  PersonDao(super.db);
 
   // Get all persons associated with a specific collection
   Future<List<Person>> getPersonsForCollection(int collectionId) => (select(persons)..where((p) => p.collectionId.equals(collectionId))).get();

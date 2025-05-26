@@ -6,7 +6,7 @@ part 'collection_dao.g.dart';
 
 @DriftAccessor(tables: [Collections])
 class CollectionDao extends DatabaseAccessor<AppDatabase> with _$CollectionDaoMixin {
-  CollectionDao(AppDatabase db) : super(db);
+  CollectionDao(super.db);
 
   Future<List<Collection>> getAllCollections() => select(collections).get();
 

@@ -7,7 +7,7 @@ import 'package:split_ease/database/app_database.dart';
 class CollectionsPage extends StatelessWidget {
   final AppDatabase database;
 
-  const CollectionsPage({Key? key, required this.database}) : super(key: key);
+  const CollectionsPage({super.key, required this.database});
 
   @override
   Widget build(BuildContext context) {

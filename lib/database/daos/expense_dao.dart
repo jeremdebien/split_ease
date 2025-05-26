@@ -6,7 +6,7 @@ part 'expense_dao.g.dart';
 
 @DriftAccessor(tables: [Expenses])
 class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
-  ExpenseDao(AppDatabase db) : super(db);
+  ExpenseDao(super.db);
 
   // Updated parameter and method to use collectionId instead of tripId
   Future<List<Expense>> getExpensesForCollection(int collectionId) => (select(expenses)..where((e) => e.collectionId.equals(collectionId))).get();
