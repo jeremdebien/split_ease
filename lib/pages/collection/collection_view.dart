@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:split_ease/common/widgets/navbar.dart';
 import 'package:split_ease/cubit/collection/collection_cubit.dart';
 import 'package:split_ease/cubit/collection/collection_state.dart';
 import 'package:split_ease/pages/expenses/expenses_page.dart';
 
 class CollectionView extends StatelessWidget {
+  const CollectionView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Collections')),
+      bottomNavigationBar: MobileNavBar(currentIndex: 0),
       body: BlocBuilder<CollectionCubit, CollectionState>(
         builder: (context, state) {
           if (state is CollectionLoading) {

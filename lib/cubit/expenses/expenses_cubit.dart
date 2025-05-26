@@ -20,7 +20,7 @@ class ExpensesCubit extends Cubit<ExpensesState> {
 
   Future<void> addExpense(ExpensesCompanion expense) async {
     try {
-      final insertedExpense = await expenseDao.insertAndReturnExpense(expense);
+      final insertedExpense = await expenseDao.insertAndReturn(expense);
       if (state is ExpensesLoaded) {
         final currentState = state as ExpensesLoaded;
         final newExpenses = List<Expense>.from(currentState.expenses)..add(insertedExpense);
