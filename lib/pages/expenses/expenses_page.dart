@@ -13,7 +13,7 @@ class ExpensesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ExpensesCubit(getIt<AppDatabase>().expenseDao)..loadExpenses(collectionId),
+      create: (_) => ExpensesCubit(getIt<AppDatabase>().expenseDao, getIt<AppDatabase>().expenseImageDao)..loadExpenses(collectionId),
       child: ExpensesView(collectionId: collectionId),
     );
   }

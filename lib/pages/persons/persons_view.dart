@@ -78,7 +78,6 @@ class PersonsView extends StatelessWidget {
                 context.read<PersonsCubit>().addPerson(
                       PersonsCompanion(
                         name: drift.Value(name),
-                        // Optionally include collectionId if passed to PersonsView
                         collectionId: collectionId != null ? drift.Value(collectionId!) : drift.Value(1),
                       ),
                     );

@@ -300,8 +300,32 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, Person> {
           GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 100),
       type: DriftSqlType.string,
       requiredDuringInsert: true);
+  static const VerificationMeta _contactNumberMeta =
+      const VerificationMeta('contactNumber');
   @override
-  List<GeneratedColumn> get $columns => [id, collectionId, name];
+  late final GeneratedColumn<String> contactNumber = GeneratedColumn<String>(
+      'contact_number', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 0, maxTextLength: 20),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _emailMeta = const VerificationMeta('email');
+  @override
+  late final GeneratedColumn<String> email = GeneratedColumn<String>(
+      'email', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 0, maxTextLength: 100),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _imagePathMeta =
+      const VerificationMeta('imagePath');
+  @override
+  late final GeneratedColumn<String> imagePath = GeneratedColumn<String>(
+      'image_path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, collectionId, name, contactNumber, email, imagePath];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -329,6 +353,20 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, Person> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('contact_number')) {
+      context.handle(
+          _contactNumberMeta,
+          contactNumber.isAcceptableOrUnknown(
+              data['contact_number']!, _contactNumberMeta));
+    }
+    if (data.containsKey('email')) {
+      context.handle(
+          _emailMeta, email.isAcceptableOrUnknown(data['email']!, _emailMeta));
+    }
+    if (data.containsKey('image_path')) {
+      context.handle(_imagePathMeta,
+          imagePath.isAcceptableOrUnknown(data['image_path']!, _imagePathMeta));
+    }
     return context;
   }
 
@@ -344,6 +382,12 @@ class $PersonsTable extends Persons with TableInfo<$PersonsTable, Person> {
           .read(DriftSqlType.int, data['${effectivePrefix}collection_id'])!,
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      contactNumber: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}contact_number']),
+      email: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}email']),
+      imagePath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}image_path']),
     );
   }
 
@@ -357,14 +401,31 @@ class Person extends DataClass implements Insertable<Person> {
   final int id;
   final int collectionId;
   final String name;
+  final String? contactNumber;
+  final String? email;
+  final String? imagePath;
   const Person(
-      {required this.id, required this.collectionId, required this.name});
+      {required this.id,
+      required this.collectionId,
+      required this.name,
+      this.contactNumber,
+      this.email,
+      this.imagePath});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['collection_id'] = Variable<int>(collectionId);
     map['name'] = Variable<String>(name);
+    if (!nullToAbsent || contactNumber != null) {
+      map['contact_number'] = Variable<String>(contactNumber);
+    }
+    if (!nullToAbsent || email != null) {
+      map['email'] = Variable<String>(email);
+    }
+    if (!nullToAbsent || imagePath != null) {
+      map['image_path'] = Variable<String>(imagePath);
+    }
     return map;
   }
 
@@ -373,6 +434,14 @@ class Person extends DataClass implements Insertable<Person> {
       id: Value(id),
       collectionId: Value(collectionId),
       name: Value(name),
+      contactNumber: contactNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(contactNumber),
+      email:
+          email == null && nullToAbsent ? const Value.absent() : Value(email),
+      imagePath: imagePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imagePath),
     );
   }
 
@@ -383,6 +452,9 @@ class Person extends DataClass implements Insertable<Person> {
       id: serializer.fromJson<int>(json['id']),
       collectionId: serializer.fromJson<int>(json['collectionId']),
       name: serializer.fromJson<String>(json['name']),
+      contactNumber: serializer.fromJson<String?>(json['contactNumber']),
+      email: serializer.fromJson<String?>(json['email']),
+      imagePath: serializer.fromJson<String?>(json['imagePath']),
     );
   }
   @override
@@ -392,13 +464,27 @@ class Person extends DataClass implements Insertable<Person> {
       'id': serializer.toJson<int>(id),
       'collectionId': serializer.toJson<int>(collectionId),
       'name': serializer.toJson<String>(name),
+      'contactNumber': serializer.toJson<String?>(contactNumber),
+      'email': serializer.toJson<String?>(email),
+      'imagePath': serializer.toJson<String?>(imagePath),
     };
   }
 
-  Person copyWith({int? id, int? collectionId, String? name}) => Person(
+  Person copyWith(
+          {int? id,
+          int? collectionId,
+          String? name,
+          Value<String?> contactNumber = const Value.absent(),
+          Value<String?> email = const Value.absent(),
+          Value<String?> imagePath = const Value.absent()}) =>
+      Person(
         id: id ?? this.id,
         collectionId: collectionId ?? this.collectionId,
         name: name ?? this.name,
+        contactNumber:
+            contactNumber.present ? contactNumber.value : this.contactNumber,
+        email: email.present ? email.value : this.email,
+        imagePath: imagePath.present ? imagePath.value : this.imagePath,
       );
   Person copyWithCompanion(PersonsCompanion data) {
     return Person(
@@ -407,6 +493,11 @@ class Person extends DataClass implements Insertable<Person> {
           ? data.collectionId.value
           : this.collectionId,
       name: data.name.present ? data.name.value : this.name,
+      contactNumber: data.contactNumber.present
+          ? data.contactNumber.value
+          : this.contactNumber,
+      email: data.email.present ? data.email.value : this.email,
+      imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
     );
   }
 
@@ -415,55 +506,85 @@ class Person extends DataClass implements Insertable<Person> {
     return (StringBuffer('Person(')
           ..write('id: $id, ')
           ..write('collectionId: $collectionId, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('contactNumber: $contactNumber, ')
+          ..write('email: $email, ')
+          ..write('imagePath: $imagePath')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, collectionId, name);
+  int get hashCode =>
+      Object.hash(id, collectionId, name, contactNumber, email, imagePath);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Person &&
           other.id == this.id &&
           other.collectionId == this.collectionId &&
-          other.name == this.name);
+          other.name == this.name &&
+          other.contactNumber == this.contactNumber &&
+          other.email == this.email &&
+          other.imagePath == this.imagePath);
 }
 
 class PersonsCompanion extends UpdateCompanion<Person> {
   final Value<int> id;
   final Value<int> collectionId;
   final Value<String> name;
+  final Value<String?> contactNumber;
+  final Value<String?> email;
+  final Value<String?> imagePath;
   const PersonsCompanion({
     this.id = const Value.absent(),
     this.collectionId = const Value.absent(),
     this.name = const Value.absent(),
+    this.contactNumber = const Value.absent(),
+    this.email = const Value.absent(),
+    this.imagePath = const Value.absent(),
   });
   PersonsCompanion.insert({
     this.id = const Value.absent(),
     required int collectionId,
     required String name,
+    this.contactNumber = const Value.absent(),
+    this.email = const Value.absent(),
+    this.imagePath = const Value.absent(),
   })  : collectionId = Value(collectionId),
         name = Value(name);
   static Insertable<Person> custom({
     Expression<int>? id,
     Expression<int>? collectionId,
     Expression<String>? name,
+    Expression<String>? contactNumber,
+    Expression<String>? email,
+    Expression<String>? imagePath,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (collectionId != null) 'collection_id': collectionId,
       if (name != null) 'name': name,
+      if (contactNumber != null) 'contact_number': contactNumber,
+      if (email != null) 'email': email,
+      if (imagePath != null) 'image_path': imagePath,
     });
   }
 
   PersonsCompanion copyWith(
-      {Value<int>? id, Value<int>? collectionId, Value<String>? name}) {
+      {Value<int>? id,
+      Value<int>? collectionId,
+      Value<String>? name,
+      Value<String?>? contactNumber,
+      Value<String?>? email,
+      Value<String?>? imagePath}) {
     return PersonsCompanion(
       id: id ?? this.id,
       collectionId: collectionId ?? this.collectionId,
       name: name ?? this.name,
+      contactNumber: contactNumber ?? this.contactNumber,
+      email: email ?? this.email,
+      imagePath: imagePath ?? this.imagePath,
     );
   }
 
@@ -479,6 +600,15 @@ class PersonsCompanion extends UpdateCompanion<Person> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (contactNumber.present) {
+      map['contact_number'] = Variable<String>(contactNumber.value);
+    }
+    if (email.present) {
+      map['email'] = Variable<String>(email.value);
+    }
+    if (imagePath.present) {
+      map['image_path'] = Variable<String>(imagePath.value);
+    }
     return map;
   }
 
@@ -487,7 +617,10 @@ class PersonsCompanion extends UpdateCompanion<Person> {
     return (StringBuffer('PersonsCompanion(')
           ..write('id: $id, ')
           ..write('collectionId: $collectionId, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('contactNumber: $contactNumber, ')
+          ..write('email: $email, ')
+          ..write('imagePath: $imagePath')
           ..write(')'))
         .toString();
   }
@@ -548,9 +681,19 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   late final GeneratedColumn<String> notes = GeneratedColumn<String>(
       'notes', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _splitTypeMeta =
+      const VerificationMeta('splitType');
+  @override
+  late final GeneratedColumn<String> splitType = GeneratedColumn<String>(
+      'split_type', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 20),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('equal'));
   @override
   List<GeneratedColumn> get $columns =>
-      [id, collectionId, title, amount, paidBy, date, notes];
+      [id, collectionId, title, amount, paidBy, date, notes, splitType];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -598,6 +741,10 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       context.handle(
           _notesMeta, notes.isAcceptableOrUnknown(data['notes']!, _notesMeta));
     }
+    if (data.containsKey('split_type')) {
+      context.handle(_splitTypeMeta,
+          splitType.isAcceptableOrUnknown(data['split_type']!, _splitTypeMeta));
+    }
     return context;
   }
 
@@ -621,6 +768,8 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
           .read(DriftSqlType.dateTime, data['${effectivePrefix}date'])!,
       notes: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}notes']),
+      splitType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}split_type'])!,
     );
   }
 
@@ -638,6 +787,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   final int paidBy;
   final DateTime date;
   final String? notes;
+  final String splitType;
   const Expense(
       {required this.id,
       required this.collectionId,
@@ -645,7 +795,8 @@ class Expense extends DataClass implements Insertable<Expense> {
       required this.amount,
       required this.paidBy,
       required this.date,
-      this.notes});
+      this.notes,
+      required this.splitType});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -658,6 +809,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
     }
+    map['split_type'] = Variable<String>(splitType);
     return map;
   }
 
@@ -671,6 +823,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       date: Value(date),
       notes:
           notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      splitType: Value(splitType),
     );
   }
 
@@ -685,6 +838,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       paidBy: serializer.fromJson<int>(json['paidBy']),
       date: serializer.fromJson<DateTime>(json['date']),
       notes: serializer.fromJson<String?>(json['notes']),
+      splitType: serializer.fromJson<String>(json['splitType']),
     );
   }
   @override
@@ -698,6 +852,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       'paidBy': serializer.toJson<int>(paidBy),
       'date': serializer.toJson<DateTime>(date),
       'notes': serializer.toJson<String?>(notes),
+      'splitType': serializer.toJson<String>(splitType),
     };
   }
 
@@ -708,7 +863,8 @@ class Expense extends DataClass implements Insertable<Expense> {
           double? amount,
           int? paidBy,
           DateTime? date,
-          Value<String?> notes = const Value.absent()}) =>
+          Value<String?> notes = const Value.absent(),
+          String? splitType}) =>
       Expense(
         id: id ?? this.id,
         collectionId: collectionId ?? this.collectionId,
@@ -717,6 +873,7 @@ class Expense extends DataClass implements Insertable<Expense> {
         paidBy: paidBy ?? this.paidBy,
         date: date ?? this.date,
         notes: notes.present ? notes.value : this.notes,
+        splitType: splitType ?? this.splitType,
       );
   Expense copyWithCompanion(ExpensesCompanion data) {
     return Expense(
@@ -729,6 +886,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       paidBy: data.paidBy.present ? data.paidBy.value : this.paidBy,
       date: data.date.present ? data.date.value : this.date,
       notes: data.notes.present ? data.notes.value : this.notes,
+      splitType: data.splitType.present ? data.splitType.value : this.splitType,
     );
   }
 
@@ -741,14 +899,15 @@ class Expense extends DataClass implements Insertable<Expense> {
           ..write('amount: $amount, ')
           ..write('paidBy: $paidBy, ')
           ..write('date: $date, ')
-          ..write('notes: $notes')
+          ..write('notes: $notes, ')
+          ..write('splitType: $splitType')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, collectionId, title, amount, paidBy, date, notes);
+  int get hashCode => Object.hash(
+      id, collectionId, title, amount, paidBy, date, notes, splitType);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -759,7 +918,8 @@ class Expense extends DataClass implements Insertable<Expense> {
           other.amount == this.amount &&
           other.paidBy == this.paidBy &&
           other.date == this.date &&
-          other.notes == this.notes);
+          other.notes == this.notes &&
+          other.splitType == this.splitType);
 }
 
 class ExpensesCompanion extends UpdateCompanion<Expense> {
@@ -770,6 +930,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<int> paidBy;
   final Value<DateTime> date;
   final Value<String?> notes;
+  final Value<String> splitType;
   const ExpensesCompanion({
     this.id = const Value.absent(),
     this.collectionId = const Value.absent(),
@@ -778,6 +939,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     this.paidBy = const Value.absent(),
     this.date = const Value.absent(),
     this.notes = const Value.absent(),
+    this.splitType = const Value.absent(),
   });
   ExpensesCompanion.insert({
     this.id = const Value.absent(),
@@ -787,6 +949,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     required int paidBy,
     this.date = const Value.absent(),
     this.notes = const Value.absent(),
+    this.splitType = const Value.absent(),
   })  : collectionId = Value(collectionId),
         title = Value(title),
         amount = Value(amount),
@@ -799,6 +962,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Expression<int>? paidBy,
     Expression<DateTime>? date,
     Expression<String>? notes,
+    Expression<String>? splitType,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -808,6 +972,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       if (paidBy != null) 'paid_by': paidBy,
       if (date != null) 'date': date,
       if (notes != null) 'notes': notes,
+      if (splitType != null) 'split_type': splitType,
     });
   }
 
@@ -818,7 +983,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       Value<double>? amount,
       Value<int>? paidBy,
       Value<DateTime>? date,
-      Value<String?>? notes}) {
+      Value<String?>? notes,
+      Value<String>? splitType}) {
     return ExpensesCompanion(
       id: id ?? this.id,
       collectionId: collectionId ?? this.collectionId,
@@ -827,6 +993,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       paidBy: paidBy ?? this.paidBy,
       date: date ?? this.date,
       notes: notes ?? this.notes,
+      splitType: splitType ?? this.splitType,
     );
   }
 
@@ -854,6 +1021,9 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (splitType.present) {
+      map['split_type'] = Variable<String>(splitType.value);
+    }
     return map;
   }
 
@@ -866,7 +1036,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
           ..write('amount: $amount, ')
           ..write('paidBy: $paidBy, ')
           ..write('date: $date, ')
-          ..write('notes: $notes')
+          ..write('notes: $notes, ')
+          ..write('splitType: $splitType')
           ..write(')'))
         .toString();
   }
@@ -1137,6 +1308,224 @@ class ExpenseSharesCompanion extends UpdateCompanion<ExpenseShare> {
   }
 }
 
+class $ExpenseImagesTable extends ExpenseImages
+    with TableInfo<$ExpenseImagesTable, ExpenseImage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ExpenseImagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _expenseIdMeta =
+      const VerificationMeta('expenseId');
+  @override
+  late final GeneratedColumn<int> expenseId = GeneratedColumn<int>(
+      'expense_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      $customConstraints: 'NOT NULL REFERENCES expenses(id) ON DELETE CASCADE');
+  static const VerificationMeta _pathMeta = const VerificationMeta('path');
+  @override
+  late final GeneratedColumn<String> path = GeneratedColumn<String>(
+      'path', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [id, expenseId, path];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'expense_images';
+  @override
+  VerificationContext validateIntegrity(Insertable<ExpenseImage> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('expense_id')) {
+      context.handle(_expenseIdMeta,
+          expenseId.isAcceptableOrUnknown(data['expense_id']!, _expenseIdMeta));
+    } else if (isInserting) {
+      context.missing(_expenseIdMeta);
+    }
+    if (data.containsKey('path')) {
+      context.handle(
+          _pathMeta, path.isAcceptableOrUnknown(data['path']!, _pathMeta));
+    } else if (isInserting) {
+      context.missing(_pathMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  ExpenseImage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return ExpenseImage(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      expenseId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}expense_id'])!,
+      path: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}path'])!,
+    );
+  }
+
+  @override
+  $ExpenseImagesTable createAlias(String alias) {
+    return $ExpenseImagesTable(attachedDatabase, alias);
+  }
+}
+
+class ExpenseImage extends DataClass implements Insertable<ExpenseImage> {
+  final int id;
+  final int expenseId;
+  final String path;
+  const ExpenseImage(
+      {required this.id, required this.expenseId, required this.path});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['expense_id'] = Variable<int>(expenseId);
+    map['path'] = Variable<String>(path);
+    return map;
+  }
+
+  ExpenseImagesCompanion toCompanion(bool nullToAbsent) {
+    return ExpenseImagesCompanion(
+      id: Value(id),
+      expenseId: Value(expenseId),
+      path: Value(path),
+    );
+  }
+
+  factory ExpenseImage.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return ExpenseImage(
+      id: serializer.fromJson<int>(json['id']),
+      expenseId: serializer.fromJson<int>(json['expenseId']),
+      path: serializer.fromJson<String>(json['path']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'expenseId': serializer.toJson<int>(expenseId),
+      'path': serializer.toJson<String>(path),
+    };
+  }
+
+  ExpenseImage copyWith({int? id, int? expenseId, String? path}) =>
+      ExpenseImage(
+        id: id ?? this.id,
+        expenseId: expenseId ?? this.expenseId,
+        path: path ?? this.path,
+      );
+  ExpenseImage copyWithCompanion(ExpenseImagesCompanion data) {
+    return ExpenseImage(
+      id: data.id.present ? data.id.value : this.id,
+      expenseId: data.expenseId.present ? data.expenseId.value : this.expenseId,
+      path: data.path.present ? data.path.value : this.path,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseImage(')
+          ..write('id: $id, ')
+          ..write('expenseId: $expenseId, ')
+          ..write('path: $path')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, expenseId, path);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ExpenseImage &&
+          other.id == this.id &&
+          other.expenseId == this.expenseId &&
+          other.path == this.path);
+}
+
+class ExpenseImagesCompanion extends UpdateCompanion<ExpenseImage> {
+  final Value<int> id;
+  final Value<int> expenseId;
+  final Value<String> path;
+  const ExpenseImagesCompanion({
+    this.id = const Value.absent(),
+    this.expenseId = const Value.absent(),
+    this.path = const Value.absent(),
+  });
+  ExpenseImagesCompanion.insert({
+    this.id = const Value.absent(),
+    required int expenseId,
+    required String path,
+  })  : expenseId = Value(expenseId),
+        path = Value(path);
+  static Insertable<ExpenseImage> custom({
+    Expression<int>? id,
+    Expression<int>? expenseId,
+    Expression<String>? path,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (expenseId != null) 'expense_id': expenseId,
+      if (path != null) 'path': path,
+    });
+  }
+
+  ExpenseImagesCompanion copyWith(
+      {Value<int>? id, Value<int>? expenseId, Value<String>? path}) {
+    return ExpenseImagesCompanion(
+      id: id ?? this.id,
+      expenseId: expenseId ?? this.expenseId,
+      path: path ?? this.path,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (expenseId.present) {
+      map['expense_id'] = Variable<int>(expenseId.value);
+    }
+    if (path.present) {
+      map['path'] = Variable<String>(path.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ExpenseImagesCompanion(')
+          ..write('id: $id, ')
+          ..write('expenseId: $expenseId, ')
+          ..write('path: $path')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1144,17 +1533,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PersonsTable persons = $PersonsTable(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
   late final $ExpenseSharesTable expenseShares = $ExpenseSharesTable(this);
+  late final $ExpenseImagesTable expenseImages = $ExpenseImagesTable(this);
   late final CollectionDao collectionDao = CollectionDao(this as AppDatabase);
   late final PersonDao personDao = PersonDao(this as AppDatabase);
   late final ExpenseDao expenseDao = ExpenseDao(this as AppDatabase);
   late final ExpenseShareDao expenseShareDao =
       ExpenseShareDao(this as AppDatabase);
+  late final ExpenseImageDao expenseImageDao =
+      ExpenseImageDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [collections, persons, expenses, expenseShares];
+      [collections, persons, expenses, expenseShares, expenseImages];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules(
         [
@@ -1177,6 +1569,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
                 limitUpdateKind: UpdateKind.delete),
             result: [
               TableUpdate('expense_shares', kind: UpdateKind.delete),
+            ],
+          ),
+          WritePropagation(
+            on: TableUpdateQuery.onTableName('expenses',
+                limitUpdateKind: UpdateKind.delete),
+            result: [
+              TableUpdate('expense_images', kind: UpdateKind.delete),
             ],
           ),
         ],
@@ -1494,11 +1893,17 @@ typedef $$PersonsTableCreateCompanionBuilder = PersonsCompanion Function({
   Value<int> id,
   required int collectionId,
   required String name,
+  Value<String?> contactNumber,
+  Value<String?> email,
+  Value<String?> imagePath,
 });
 typedef $$PersonsTableUpdateCompanionBuilder = PersonsCompanion Function({
   Value<int> id,
   Value<int> collectionId,
   Value<String> name,
+  Value<String?> contactNumber,
+  Value<String?> email,
+  Value<String?> imagePath,
 });
 
 final class $$PersonsTableReferences
@@ -1564,6 +1969,15 @@ class $$PersonsTableFilterComposer
 
   ColumnFilters<String> get name => $composableBuilder(
       column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get contactNumber => $composableBuilder(
+      column: $table.contactNumber, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get email => $composableBuilder(
+      column: $table.email, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get imagePath => $composableBuilder(
+      column: $table.imagePath, builder: (column) => ColumnFilters(column));
 
   $$CollectionsTableFilterComposer get collectionId {
     final $$CollectionsTableFilterComposer composer = $composerBuilder(
@@ -1643,6 +2057,16 @@ class $$PersonsTableOrderingComposer
   ColumnOrderings<String> get name => $composableBuilder(
       column: $table.name, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get contactNumber => $composableBuilder(
+      column: $table.contactNumber,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get email => $composableBuilder(
+      column: $table.email, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get imagePath => $composableBuilder(
+      column: $table.imagePath, builder: (column) => ColumnOrderings(column));
+
   $$CollectionsTableOrderingComposer get collectionId {
     final $$CollectionsTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -1678,6 +2102,15 @@ class $$PersonsTableAnnotationComposer
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get contactNumber => $composableBuilder(
+      column: $table.contactNumber, builder: (column) => column);
+
+  GeneratedColumn<String> get email =>
+      $composableBuilder(column: $table.email, builder: (column) => column);
+
+  GeneratedColumn<String> get imagePath =>
+      $composableBuilder(column: $table.imagePath, builder: (column) => column);
 
   $$CollectionsTableAnnotationComposer get collectionId {
     final $$CollectionsTableAnnotationComposer composer = $composerBuilder(
@@ -1769,21 +2202,33 @@ class $$PersonsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<int> collectionId = const Value.absent(),
             Value<String> name = const Value.absent(),
+            Value<String?> contactNumber = const Value.absent(),
+            Value<String?> email = const Value.absent(),
+            Value<String?> imagePath = const Value.absent(),
           }) =>
               PersonsCompanion(
             id: id,
             collectionId: collectionId,
             name: name,
+            contactNumber: contactNumber,
+            email: email,
+            imagePath: imagePath,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             required int collectionId,
             required String name,
+            Value<String?> contactNumber = const Value.absent(),
+            Value<String?> email = const Value.absent(),
+            Value<String?> imagePath = const Value.absent(),
           }) =>
               PersonsCompanion.insert(
             id: id,
             collectionId: collectionId,
             name: name,
+            contactNumber: contactNumber,
+            email: email,
+            imagePath: imagePath,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>
@@ -1880,6 +2325,7 @@ typedef $$ExpensesTableCreateCompanionBuilder = ExpensesCompanion Function({
   required int paidBy,
   Value<DateTime> date,
   Value<String?> notes,
+  Value<String> splitType,
 });
 typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
   Value<int> id,
@@ -1889,6 +2335,7 @@ typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
   Value<int> paidBy,
   Value<DateTime> date,
   Value<String?> notes,
+  Value<String> splitType,
 });
 
 final class $$ExpensesTableReferences
@@ -1938,6 +2385,21 @@ final class $$ExpensesTableReferences
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: cache));
   }
+
+  static MultiTypedResultKey<$ExpenseImagesTable, List<ExpenseImage>>
+      _expenseImagesRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.expenseImages,
+              aliasName: $_aliasNameGenerator(
+                  db.expenses.id, db.expenseImages.expenseId));
+
+  $$ExpenseImagesTableProcessedTableManager get expenseImagesRefs {
+    final manager = $$ExpenseImagesTableTableManager($_db, $_db.expenseImages)
+        .filter((f) => f.expenseId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_expenseImagesRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$ExpensesTableFilterComposer
@@ -1963,6 +2425,9 @@ class $$ExpensesTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
       column: $table.notes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get splitType => $composableBuilder(
+      column: $table.splitType, builder: (column) => ColumnFilters(column));
 
   $$CollectionsTableFilterComposer get collectionId {
     final $$CollectionsTableFilterComposer composer = $composerBuilder(
@@ -2024,6 +2489,27 @@ class $$ExpensesTableFilterComposer
             ));
     return f(composer);
   }
+
+  Expression<bool> expenseImagesRefs(
+      Expression<bool> Function($$ExpenseImagesTableFilterComposer f) f) {
+    final $$ExpenseImagesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.expenseImages,
+        getReferencedColumn: (t) => t.expenseId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ExpenseImagesTableFilterComposer(
+              $db: $db,
+              $table: $db.expenseImages,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$ExpensesTableOrderingComposer
@@ -2049,6 +2535,9 @@ class $$ExpensesTableOrderingComposer
 
   ColumnOrderings<String> get notes => $composableBuilder(
       column: $table.notes, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get splitType => $composableBuilder(
+      column: $table.splitType, builder: (column) => ColumnOrderings(column));
 
   $$CollectionsTableOrderingComposer get collectionId {
     final $$CollectionsTableOrderingComposer composer = $composerBuilder(
@@ -2115,6 +2604,9 @@ class $$ExpensesTableAnnotationComposer
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
 
+  GeneratedColumn<String> get splitType =>
+      $composableBuilder(column: $table.splitType, builder: (column) => column);
+
   $$CollectionsTableAnnotationComposer get collectionId {
     final $$CollectionsTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -2175,6 +2667,27 @@ class $$ExpensesTableAnnotationComposer
             ));
     return f(composer);
   }
+
+  Expression<T> expenseImagesRefs<T extends Object>(
+      Expression<T> Function($$ExpenseImagesTableAnnotationComposer a) f) {
+    final $$ExpenseImagesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.expenseImages,
+        getReferencedColumn: (t) => t.expenseId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ExpenseImagesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.expenseImages,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$ExpensesTableTableManager extends RootTableManager<
@@ -2189,7 +2702,10 @@ class $$ExpensesTableTableManager extends RootTableManager<
     (Expense, $$ExpensesTableReferences),
     Expense,
     PrefetchHooks Function(
-        {bool collectionId, bool paidBy, bool expenseSharesRefs})> {
+        {bool collectionId,
+        bool paidBy,
+        bool expenseSharesRefs,
+        bool expenseImagesRefs})> {
   $$ExpensesTableTableManager(_$AppDatabase db, $ExpensesTable table)
       : super(TableManagerState(
           db: db,
@@ -2208,6 +2724,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
             Value<int> paidBy = const Value.absent(),
             Value<DateTime> date = const Value.absent(),
             Value<String?> notes = const Value.absent(),
+            Value<String> splitType = const Value.absent(),
           }) =>
               ExpensesCompanion(
             id: id,
@@ -2217,6 +2734,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
             paidBy: paidBy,
             date: date,
             notes: notes,
+            splitType: splitType,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -2226,6 +2744,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
             required int paidBy,
             Value<DateTime> date = const Value.absent(),
             Value<String?> notes = const Value.absent(),
+            Value<String> splitType = const Value.absent(),
           }) =>
               ExpensesCompanion.insert(
             id: id,
@@ -2235,6 +2754,7 @@ class $$ExpensesTableTableManager extends RootTableManager<
             paidBy: paidBy,
             date: date,
             notes: notes,
+            splitType: splitType,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) =>
@@ -2243,11 +2763,13 @@ class $$ExpensesTableTableManager extends RootTableManager<
           prefetchHooksCallback: (
               {collectionId = false,
               paidBy = false,
-              expenseSharesRefs = false}) {
+              expenseSharesRefs = false,
+              expenseImagesRefs = false}) {
             return PrefetchHooks(
               db: db,
               explicitlyWatchedTables: [
-                if (expenseSharesRefs) db.expenseShares
+                if (expenseSharesRefs) db.expenseShares,
+                if (expenseImagesRefs) db.expenseImages
               ],
               addJoins: <
                   T extends TableManagerState<
@@ -2298,6 +2820,19 @@ class $$ExpensesTableTableManager extends RootTableManager<
                         referencedItemsForCurrentItem:
                             (item, referencedItems) => referencedItems
                                 .where((e) => e.expenseId == item.id),
+                        typedResults: items),
+                  if (expenseImagesRefs)
+                    await $_getPrefetchedData<Expense, $ExpensesTable,
+                            ExpenseImage>(
+                        currentTable: table,
+                        referencedTable: $$ExpensesTableReferences
+                            ._expenseImagesRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$ExpensesTableReferences(db, table, p0)
+                                .expenseImagesRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.expenseId == item.id),
                         typedResults: items)
                 ];
               },
@@ -2318,7 +2853,10 @@ typedef $$ExpensesTableProcessedTableManager = ProcessedTableManager<
     (Expense, $$ExpensesTableReferences),
     Expense,
     PrefetchHooks Function(
-        {bool collectionId, bool paidBy, bool expenseSharesRefs})>;
+        {bool collectionId,
+        bool paidBy,
+        bool expenseSharesRefs,
+        bool expenseImagesRefs})>;
 typedef $$ExpenseSharesTableCreateCompanionBuilder = ExpenseSharesCompanion
     Function({
   Value<int> id,
@@ -2650,6 +3188,246 @@ typedef $$ExpenseSharesTableProcessedTableManager = ProcessedTableManager<
     (ExpenseShare, $$ExpenseSharesTableReferences),
     ExpenseShare,
     PrefetchHooks Function({bool expenseId, bool personId})>;
+typedef $$ExpenseImagesTableCreateCompanionBuilder = ExpenseImagesCompanion
+    Function({
+  Value<int> id,
+  required int expenseId,
+  required String path,
+});
+typedef $$ExpenseImagesTableUpdateCompanionBuilder = ExpenseImagesCompanion
+    Function({
+  Value<int> id,
+  Value<int> expenseId,
+  Value<String> path,
+});
+
+final class $$ExpenseImagesTableReferences
+    extends BaseReferences<_$AppDatabase, $ExpenseImagesTable, ExpenseImage> {
+  $$ExpenseImagesTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $ExpensesTable _expenseIdTable(_$AppDatabase db) =>
+      db.expenses.createAlias(
+          $_aliasNameGenerator(db.expenseImages.expenseId, db.expenses.id));
+
+  $$ExpensesTableProcessedTableManager get expenseId {
+    final $_column = $_itemColumn<int>('expense_id')!;
+
+    final manager = $$ExpensesTableTableManager($_db, $_db.expenses)
+        .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_expenseIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$ExpenseImagesTableFilterComposer
+    extends Composer<_$AppDatabase, $ExpenseImagesTable> {
+  $$ExpenseImagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get path => $composableBuilder(
+      column: $table.path, builder: (column) => ColumnFilters(column));
+
+  $$ExpensesTableFilterComposer get expenseId {
+    final $$ExpensesTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.expenseId,
+        referencedTable: $db.expenses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ExpensesTableFilterComposer(
+              $db: $db,
+              $table: $db.expenses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ExpenseImagesTableOrderingComposer
+    extends Composer<_$AppDatabase, $ExpenseImagesTable> {
+  $$ExpenseImagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get path => $composableBuilder(
+      column: $table.path, builder: (column) => ColumnOrderings(column));
+
+  $$ExpensesTableOrderingComposer get expenseId {
+    final $$ExpensesTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.expenseId,
+        referencedTable: $db.expenses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ExpensesTableOrderingComposer(
+              $db: $db,
+              $table: $db.expenses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ExpenseImagesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ExpenseImagesTable> {
+  $$ExpenseImagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get path =>
+      $composableBuilder(column: $table.path, builder: (column) => column);
+
+  $$ExpensesTableAnnotationComposer get expenseId {
+    final $$ExpensesTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.expenseId,
+        referencedTable: $db.expenses,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$ExpensesTableAnnotationComposer(
+              $db: $db,
+              $table: $db.expenses,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$ExpenseImagesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $ExpenseImagesTable,
+    ExpenseImage,
+    $$ExpenseImagesTableFilterComposer,
+    $$ExpenseImagesTableOrderingComposer,
+    $$ExpenseImagesTableAnnotationComposer,
+    $$ExpenseImagesTableCreateCompanionBuilder,
+    $$ExpenseImagesTableUpdateCompanionBuilder,
+    (ExpenseImage, $$ExpenseImagesTableReferences),
+    ExpenseImage,
+    PrefetchHooks Function({bool expenseId})> {
+  $$ExpenseImagesTableTableManager(_$AppDatabase db, $ExpenseImagesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ExpenseImagesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ExpenseImagesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ExpenseImagesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> expenseId = const Value.absent(),
+            Value<String> path = const Value.absent(),
+          }) =>
+              ExpenseImagesCompanion(
+            id: id,
+            expenseId: expenseId,
+            path: path,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required int expenseId,
+            required String path,
+          }) =>
+              ExpenseImagesCompanion.insert(
+            id: id,
+            expenseId: expenseId,
+            path: path,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$ExpenseImagesTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({expenseId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (expenseId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.expenseId,
+                    referencedTable:
+                        $$ExpenseImagesTableReferences._expenseIdTable(db),
+                    referencedColumn:
+                        $$ExpenseImagesTableReferences._expenseIdTable(db).id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$ExpenseImagesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $ExpenseImagesTable,
+    ExpenseImage,
+    $$ExpenseImagesTableFilterComposer,
+    $$ExpenseImagesTableOrderingComposer,
+    $$ExpenseImagesTableAnnotationComposer,
+    $$ExpenseImagesTableCreateCompanionBuilder,
+    $$ExpenseImagesTableUpdateCompanionBuilder,
+    (ExpenseImage, $$ExpenseImagesTableReferences),
+    ExpenseImage,
+    PrefetchHooks Function({bool expenseId})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2662,4 +3440,6 @@ class $AppDatabaseManager {
       $$ExpensesTableTableManager(_db, _db.expenses);
   $$ExpenseSharesTableTableManager get expenseShares =>
       $$ExpenseSharesTableTableManager(_db, _db.expenseShares);
+  $$ExpenseImagesTableTableManager get expenseImages =>
+      $$ExpenseImagesTableTableManager(_db, _db.expenseImages);
 }
