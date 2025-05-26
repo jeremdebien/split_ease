@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:split_ease/cubit/collection/collection_cubit.dart';
 import 'package:split_ease/cubit/collection/collection_state.dart';
+import 'package:split_ease/pages/expenses/expenses_page.dart';
 
 class CollectionView extends StatelessWidget {
   @override
@@ -21,14 +22,21 @@ class CollectionView extends StatelessWidget {
               itemCount: collections.length,
               itemBuilder: (context, index) {
                 final collection = collections[index];
-                return ListTile(
-                  title: Text(collection.name),
-                  subtitle: Text(collection.description ?? ''),
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () {
-                      context.read<CollectionCubit>().deleteCollection(collection.id);
-                    },
+                return GestureDetector(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ExpensesPage(collectionId: collection.id),
+                      )),
+                  child: ListTile(
+                    title: Text(collection.name),
+                    subtitle: Text(collection.description ?? ''),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () {
+                        context.read<CollectionCubit>().deleteCollection(collection.id);
+                      },
+                    ),
                   ),
                 );
               },
