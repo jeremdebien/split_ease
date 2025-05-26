@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:split_ease/cubit/expenses/expenses_cubit.dart';
@@ -92,11 +93,11 @@ class ExpensesView extends StatelessWidget {
 
               if (title.isNotEmpty && amount != null) {
                 context.read<ExpensesCubit>().addExpense(
-                      ExpensesCompanion.insert(
-                        collectionId: collectionId,
-                        title: title,
-                        amount: amount,
-                        paidBy: 1, // Placeholder; ideally select payer dynamically
+                      ExpensesCompanion(
+                        collectionId: drift.Value(collectionId),
+                        title: drift.Value(title),
+                        amount: drift.Value(amount),
+                        paidBy: const drift.Value(1), // Placeholder; ideally select payer dynamically
                       ),
                     );
                 Navigator.of(context).pop();

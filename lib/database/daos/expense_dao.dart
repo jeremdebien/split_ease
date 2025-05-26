@@ -14,4 +14,8 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
   Future<int> insertExpense(ExpensesCompanion expense) => into(expenses).insert(expense);
 
   Future<int> deleteExpense(int id) => (delete(expenses)..where((e) => e.id.equals(id))).go();
+
+  Future<Expense> insertAndReturnExpense(ExpensesCompanion expense) {
+    return into(expenses).insertReturning(expense);
+  }
 }
