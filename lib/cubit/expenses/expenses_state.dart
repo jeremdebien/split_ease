@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:split_ease/database/app_database.dart';
+import 'package:split_ease/database/custom_models/expense_with_images.dart';
 
 abstract class ExpensesState extends Equatable {
   @override
@@ -9,12 +9,12 @@ abstract class ExpensesState extends Equatable {
 class ExpensesLoading extends ExpensesState {}
 
 class ExpensesLoaded extends ExpensesState {
-  final List<Expense> expenses;
+  final List<ExpenseWithImages> expensesWithImages;
 
-  ExpensesLoaded(this.expenses);
+  ExpensesLoaded(this.expensesWithImages);
 
   @override
-  List<Object?> get props => [expenses];
+  List<Object?> get props => [expensesWithImages];
 }
 
 class ExpensesError extends ExpensesState {

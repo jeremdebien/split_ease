@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:split_ease/cubit/expenses/expenses_cubit.dart';
 import 'package:split_ease/cubit/expenses/expenses_state.dart';
 import 'package:split_ease/database/app_database.dart';
+import 'package:split_ease/database/custom_models/expense_with_images.dart';
 
 class ExpensesView extends StatelessWidget {
   final int collectionId;
@@ -21,20 +24,46 @@ class ExpensesView extends StatelessWidget {
           if (state is ExpensesLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is ExpensesLoaded) {
-            final expenses = state.expenses;
+            final List<ExpenseWithImages> expensesWithImages = state.expensesWithImages;
 
-            if (expenses.isEmpty) {
+            if (expensesWithImages.isEmpty) {
               return const Center(child: Text('No expenses found.'));
             }
 
             return ListView.builder(
-              itemCount: expenses.length,
+              itemCount: expensesWithImages.length,
               itemBuilder: (context, index) {
-                final expense = expenses[index];
+                final expenseWithImages = expensesWithImages[index];
+                final expense = expenseWithImages.expense;
+                final images = expenseWithImages.images;
+
                 return ListTile(
                   title: Text(expense.title),
-                  subtitle: Text(
-                    'Amount: ₱${expense.amount.toStringAsFixed(2)}\nDate: ${expense.date.toLocal().toString().split(' ')[0]}',
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Amount: ₱${expense.amount.toStringAsFixed(2)}'),
+                      Text('Date: ${expense.date.toLocal().toString().split(' ')[0]}'),
+                      if (images.isNotEmpty)
+                        SizedBox(
+                          height: 60,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: images.length,
+                            itemBuilder: (context, imgIndex) {
+                              final image = images[imgIndex];
+                              return Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Image.file(
+                                    File(image.path),
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                  ));
+                            },
+                          ),
+                        ),
+                    ],
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),
@@ -79,6 +108,7 @@ class ExpensesView extends StatelessWidget {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               decoration: const InputDecoration(labelText: 'Amount'),
             ),
+            // You can add your image upload widget here if you want
           ],
         ),
         actions: [
@@ -92,14 +122,15 @@ class ExpensesView extends StatelessWidget {
               final amount = double.tryParse(amountController.text.trim());
 
               if (title.isNotEmpty && amount != null) {
-                context.read<ExpensesCubit>().addExpense(
-                      ExpensesCompanion(
-                        collectionId: drift.Value(collectionId),
-                        title: drift.Value(title),
-                        amount: drift.Value(amount),
-                        paidBy: const drift.Value(1), // Placeholder; ideally select payer dynamically
-                      ),
-                    );
+                context.read<ExpensesCubit>().addExpenseWithImages(
+                  ExpensesCompanion(
+                    collectionId: drift.Value(collectionId),
+                    title: drift.Value(title),
+                    amount: drift.Value(amount),
+                    paidBy: const drift.Value(1), // Placeholder
+                  ),
+                  [],
+                );
                 Navigator.of(context).pop();
               }
             },

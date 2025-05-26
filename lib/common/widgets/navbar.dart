@@ -1,4 +1,3 @@
-// my_navbar.dart
 import 'package:flutter/material.dart';
 import 'package:split_ease/pages/collection/collection_page.dart';
 import 'package:split_ease/pages/persons/persons_page.dart';
@@ -16,25 +15,43 @@ class MobileNavBar extends StatelessWidget {
 
     switch (index) {
       case 0:
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CollectionsPage(),
-            ));
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const CollectionsPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+          ),
+        );
         break;
       case 1:
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const PersonsPage(),
-            ));
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const PersonsPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+          ),
+        );
         break;
       case 2:
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CollectionsPage(),
-            ));
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const CollectionsPage(),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+          ),
+        );
         break;
     }
   }

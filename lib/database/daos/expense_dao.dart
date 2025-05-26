@@ -15,12 +15,16 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
   // Fetch combined model: Expense with its associated images
   Future<List<ExpenseWithImages>> getExpensesWithImages(int collectionId) async {
     final expenseList = await getExpensesForCollection(collectionId);
-
     final List<ExpenseWithImages> combinedList = [];
 
     for (final expense in expenseList) {
-      final images = await (select(expenseImages)..where((img) => img.expenseId.equals(expense.id))).get();
-      combinedList.add(ExpenseWithImages(expense: expense, images: images));
+      try {
+        final images = await (select(expenseImages)..where((img) => img.expenseId.equals(expense.id))).get();
+        combinedList.add(ExpenseWithImages(expense: expense, images: images));
+      } catch (e) {
+        print('Failed to get images for expense id ${expense.id}: $e');
+        combinedList.add(ExpenseWithImages(expense: expense, images: []));
+      }
     }
 
     return combinedList;

@@ -2,7 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:split_ease/database/app_database.dart';
 import 'package:split_ease/database/tables/tables.dart';
 
-part 'expense_images_dao.g.dart';
+part 'expense_image_dao.g.dart';
 
 @DriftAccessor(tables: [ExpenseImages])
 class ExpenseImageDao extends DatabaseAccessor<AppDatabase> with _$ExpenseImageDaoMixin {
