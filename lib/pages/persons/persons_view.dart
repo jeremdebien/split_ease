@@ -78,7 +78,6 @@ class PersonsView extends StatelessWidget {
                 context.read<PersonsCubit>().addPerson(
                       PersonsCompanion(
                         name: drift.Value(name),
-                        collectionId: collectionId != null ? drift.Value(collectionId!) : drift.Value(1),
                       ),
                     );
                 Navigator.pop(context);

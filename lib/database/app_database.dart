@@ -14,7 +14,7 @@ import 'package:split_ease/database/tables/tables.dart';
 part 'app_database.g.dart'; // Generated file
 
 @DriftDatabase(
-  tables: [Collections, Persons, Expenses, ExpenseShares, ExpenseImages],
+  tables: [Collections, Persons, PersonGroups, PersonGroupMembers, Expenses, ExpenseShares, ExpenseImages],
   daos: [CollectionDao, PersonDao, ExpenseDao, ExpenseShareDao, ExpenseImageDao],
 )
 class AppDatabase extends _$AppDatabase {

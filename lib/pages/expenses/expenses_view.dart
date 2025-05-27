@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:drift/drift.dart' as drift;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:split_ease/common/widgets/custom_image_picker.dart';
 import 'package:split_ease/cubit/expenses/expenses_cubit.dart';
 import 'package:split_ease/cubit/expenses/expenses_state.dart';
 import 'package:split_ease/database/app_database.dart';
@@ -91,25 +93,40 @@ class ExpensesView extends StatelessWidget {
   void _showAddExpenseDialog(BuildContext context) {
     final titleController = TextEditingController();
     final amountController = TextEditingController();
+    List<XFile> selectedImages = [];
 
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Add Expense'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: 'Title'),
-            ),
-            TextField(
-              controller: amountController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: 'Amount'),
-            ),
-            // You can add your image upload widget here if you want
-          ],
+        content: StatefulBuilder(
+          builder: (context, setState) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(labelText: 'Title'),
+                  ),
+                  TextField(
+                    controller: amountController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: 'Amount'),
+                  ),
+                  const SizedBox(height: 12),
+                  CustomImagePicker(
+                    maxImages: 1,
+                    onImagesSelected: (images) {
+                      setState(() {
+                        selectedImages = images;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
         ),
         actions: [
           TextButton(
@@ -123,14 +140,14 @@ class ExpensesView extends StatelessWidget {
 
               if (title.isNotEmpty && amount != null) {
                 context.read<ExpensesCubit>().addExpenseWithImages(
-                  ExpensesCompanion(
-                    collectionId: drift.Value(collectionId),
-                    title: drift.Value(title),
-                    amount: drift.Value(amount),
-                    paidBy: const drift.Value(1), // Placeholder
-                  ),
-                  [],
-                );
+                      ExpensesCompanion(
+                        collectionId: drift.Value(collectionId),
+                        title: drift.Value(title),
+                        amount: drift.Value(amount),
+                        paidBy: const drift.Value(1),
+                      ),
+                      selectedImages.map((e) => ExpenseImagesCompanion(path: drift.Value(e.path))).toList(),
+                    );
                 Navigator.of(context).pop();
               }
             },

@@ -9,10 +9,10 @@ class PersonsCubit extends Cubit<PersonsState> {
 
   PersonsCubit(this.personDao) : super(const PersonsLoading());
 
-  Future<void> loadPersons([int? collectionId]) async {
+  Future<void> loadPersons() async {
     try {
       emit(const PersonsLoading());
-      final persons = collectionId == null ? await personDao.getAllPersons() : await personDao.getPersonsForCollection(collectionId);
+      final persons = await personDao.getAllPersons();
       emit(PersonsLoaded(persons));
     } catch (e) {
       emit(PersonsError('Failed to load persons'));
