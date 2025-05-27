@@ -7,9 +7,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:split_ease/database/app_database.dart';
 
 class PersonsView extends StatelessWidget {
-  final int? collectionId;
-
-  const PersonsView({super.key, this.collectionId});
+  const PersonsView({super.key});
 
   @override
   Widget build(BuildContext context) {

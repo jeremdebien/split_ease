@@ -15,7 +15,7 @@ class PersonsCubit extends Cubit<PersonsState> {
       final persons = await personDao.getAllPersons();
       emit(PersonsLoaded(persons));
     } catch (e) {
-      emit(PersonsError('Failed to load persons'));
+      emit(PersonsError('Failed to load persons: $e'));
     }
   }
 
@@ -28,7 +28,8 @@ class PersonsCubit extends Cubit<PersonsState> {
         emit(PersonsLoaded(newPersons));
       }
     } catch (e) {
-      emit(PersonsError('Failed to add person'));
+      print(PersonsError('Failed to add person: $e'));
+      emit(PersonsError('Failed to add person: $e'));
     }
   }
 
@@ -41,7 +42,7 @@ class PersonsCubit extends Cubit<PersonsState> {
         emit(PersonsLoaded(newList));
       }
     } catch (e) {
-      emit(PersonsError('Failed to delete person'));
+      emit(PersonsError('Failed to delete person: $e'));
     }
   }
 }
