@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<PersonsCubit>(
-          create: (_) => PersonsCubit(getIt<AppDatabase>().personDao)..loadPersons(),
+          create: (_) => PersonsCubit(getIt<AppDatabase>().personDao), // Constructor now calls _watchPersons
         ),
         BlocProvider(
           create: (_) => ExpensesCubit(getIt<AppDatabase>().expenseDao, getIt<AppDatabase>().expenseImageDao),

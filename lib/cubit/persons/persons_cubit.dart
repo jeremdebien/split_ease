@@ -1,4 +1,5 @@
 // persons_cubit.dart
+import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'persons_state.dart';
 import 'package:split_ease/database/app_database.dart';
@@ -6,29 +7,26 @@ import 'package:split_ease/database/daos/person_dao.dart';
 
 class PersonsCubit extends Cubit<PersonsState> {
   final PersonDao personDao;
+  StreamSubscription? _personsSubscription;
 
-  PersonsCubit(this.personDao) : super(const PersonsLoading());
+  PersonsCubit(this.personDao) : super(const PersonsInitial()) {
+    _watchPersons();
+  }
 
-  Future<void> loadPersons() async {
-    try {
-      emit(const PersonsLoading());
-      final persons = await personDao.getAllPersons();
-      emit(PersonsLoaded(persons));
-    } catch (e) {
-      emit(PersonsError('Failed to load persons: $e'));
-    }
+  void _watchPersons() {
+    emit(const PersonsLoading());
+    _personsSubscription?.cancel();
+    _personsSubscription = personDao.watchAllPersons().listen(
+          (loadedPersons) => emit(PersonsLoaded(loadedPersons)),
+          onError: (e) => emit(PersonsError('Failed to observe persons: $e')),
+        );
   }
 
   Future<void> addPerson(PersonsCompanion person) async {
     try {
-      final insertedPerson = await personDao.insertAndReturn(person);
-      if (state is PersonsLoaded) {
-        final currentState = state as PersonsLoaded;
-        final newPersons = List<Person>.from(currentState.persons)..add(insertedPerson);
-        emit(PersonsLoaded(newPersons));
-      }
+      await personDao.insertAndReturn(person);
+      // State will update automatically via the stream
     } catch (e) {
-      print(PersonsError('Failed to add person: $e'));
       emit(PersonsError('Failed to add person: $e'));
     }
   }
@@ -36,13 +34,15 @@ class PersonsCubit extends Cubit<PersonsState> {
   Future<void> deletePerson(int id) async {
     try {
       await personDao.deletePerson(id);
-      if (state is PersonsLoaded) {
-        final current = state as PersonsLoaded;
-        final newList = current.persons.where((p) => p.id != id).toList();
-        emit(PersonsLoaded(newList));
-      }
+      // State will update automatically via the stream
     } catch (e) {
       emit(PersonsError('Failed to delete person: $e'));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _personsSubscription?.cancel();
+    return super.close();
   }
 }

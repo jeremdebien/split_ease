@@ -11,6 +11,8 @@ class PersonDao extends DatabaseAccessor<AppDatabase> with _$PersonDaoMixin {
   // Get all persons
   Future<List<Person>> getAllPersons() => select(persons).get();
 
+  Stream<List<Person>> watchAllPersons() => select(persons).watch();
+
   // Insert a new person
   Future<int> insertPerson(PersonsCompanion person) => into(persons).insert(person);
 

@@ -9,11 +9,12 @@ abstract class PersonsState extends Equatable {
   List<Object> get props => [];
 }
 
+class PersonsInitial extends PersonsState {
+  const PersonsInitial();
+}
+
 class PersonsLoading extends PersonsState {
   const PersonsLoading();
-
-  @override
-  List<Object> get props => [];
 }
 
 class PersonsLoaded extends PersonsState {

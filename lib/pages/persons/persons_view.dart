@@ -11,8 +11,6 @@ class PersonsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<PersonsCubit>().loadPersons();
-
     return Scaffold(
       appBar: AppBar(title: const Text('Persons')),
       bottomNavigationBar: const MobileNavBar(currentIndex: 1),
