@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:drift/drift.dart';
 import 'package:split_ease/database/app_database.dart';
@@ -6,13 +8,23 @@ import 'collection_state.dart';
 
 class CollectionCubit extends Cubit<CollectionState> {
   final CollectionDao _collectionDao;
+  StreamSubscription? _collectionsSubscription;
 
   CollectionCubit(this._collectionDao) : super(CollectionInitial()) {
-    // Optionally load collections immediately
-    fetchCollections();
+    _watchCollections();
   }
 
-  Future<void> fetchCollections() async {
+  void _watchCollections() {
+    emit(CollectionLoading());
+    _collectionsSubscription?.cancel(); // Cancel previous subscription if any
+    _collectionsSubscription = _collectionDao.watchAllCollections().listen(
+          (collections) => emit(CollectionLoaded(collections)),
+          onError: (e) => emit(CollectionError('Failed to observe collections: $e')),
+        );
+  }
+
+  // fetchCollections is no longer needed if using watch
+  /* Future<void> fetchCollections() async {
     try {
       emit(CollectionLoading());
       final collections = await _collectionDao.getAllCollections();
@@ -20,17 +32,19 @@ class CollectionCubit extends Cubit<CollectionState> {
     } catch (e) {
       emit(CollectionError('Failed to load collections: $e'));
     }
-  }
+  } */
 
   Future<void> addCollection(String name, {String? description}) async {
     try {
       final newCollection = CollectionsCompanion(
         name: Value(name),
-        description: Value(description),
+        description: description == null || description.isEmpty ? const Value.absent() : Value(description),
       );
       await _collectionDao.insertCollection(newCollection);
-      fetchCollections(); // reload after insert
+      // State will update automatically via the stream if watchAllCollections is used
     } catch (e) {
+      // Consider how to handle errors without losing the current loaded list
+      // For example, emit a specific error event or add an error field to CollectionLoaded
       emit(CollectionError('Failed to add collection: $e'));
     }
   }
@@ -38,9 +52,15 @@ class CollectionCubit extends Cubit<CollectionState> {
   Future<void> deleteCollection(int id) async {
     try {
       await _collectionDao.deleteCollection(id);
-      fetchCollections(); // reload after delete
+      // State will update automatically via the stream
     } catch (e) {
       emit(CollectionError('Failed to delete collection: $e'));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _collectionsSubscription?.cancel();
+    return super.close();
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:split_ease/cubit/collection/collection_cubit.dart';
+import 'package:split_ease/cubit/expenses/expenses_cubit.dart';
 import 'package:split_ease/cubit/persons/persons_cubit.dart';
 import 'package:split_ease/locator.dart';
 import 'package:split_ease/pages/collection/collection_page.dart';
@@ -21,6 +21,9 @@ class MyApp extends StatelessWidget {
         BlocProvider<PersonsCubit>(
           create: (_) => PersonsCubit(getIt<AppDatabase>().personDao)..loadPersons(),
         ),
+        BlocProvider(
+          create: (_) => ExpensesCubit(getIt<AppDatabase>().expenseDao, getIt<AppDatabase>().expenseImageDao),
+        )
         // Add more global cubits here if needed in the future
       ],
       child: MaterialApp(

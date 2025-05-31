@@ -6,11 +6,12 @@ abstract class ExpensesState extends Equatable {
   List<Object?> get props => [];
 }
 
+class ExpensesInitial extends ExpensesState {}
+
 class ExpensesLoading extends ExpensesState {}
 
 class ExpensesLoaded extends ExpensesState {
   final List<ExpenseWithImages> expensesWithImages;
-
   ExpensesLoaded(this.expensesWithImages);
 
   @override

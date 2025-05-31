@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:split_ease/database/app_database.dart';
 import 'package:split_ease/pages/expenses/expenses_view.dart';
 import 'package:split_ease/cubit/expenses/expenses_cubit.dart';
-import 'package:split_ease/locator.dart';
 
 class ExpensesPage extends StatelessWidget {
   final int collectionId;
@@ -12,9 +10,7 @@ class ExpensesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ExpensesCubit(getIt<AppDatabase>().expenseDao, getIt<AppDatabase>().expenseImageDao)..loadExpenses(collectionId),
-      child: ExpensesView(collectionId: collectionId),
-    );
+    context.read<ExpensesCubit>().loadExpenses(collectionId);
+    return ExpensesView(collectionId: collectionId);
   }
 }
